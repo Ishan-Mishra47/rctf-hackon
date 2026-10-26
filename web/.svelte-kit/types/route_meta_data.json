@@ -1,0 +1,61 @@
+{
+	"/(auth)": [
+		"src/routes/+layout.ts"
+	],
+	"/": [
+		"src/routes/+layout.ts",
+		"src/routes/+layout.ts"
+	],
+	"/admin": [
+		"src/routes/+layout.ts"
+	],
+	"/admin/challenges": [
+		"src/routes/admin/challenges/+page.ts",
+		"src/routes/+layout.ts"
+	],
+	"/admin/profile/[id]": [
+		"src/routes/admin/profile/[id]/+page.ts",
+		"src/routes/+layout.ts"
+	],
+	"/admin/settings": [
+		"src/routes/+layout.ts"
+	],
+	"/admin/submissions": [
+		"src/routes/+layout.ts"
+	],
+	"/admin/teams": [
+		"src/routes/+layout.ts"
+	],
+	"/challenges": [
+		"src/routes/challenges/+page.ts",
+		"src/routes/+layout.ts"
+	],
+	"/(auth)/external-auth/authorize": [
+		"src/routes/+layout.ts"
+	],
+	"/integrations/ctftime/callback": [
+		"src/routes/+layout.ts"
+	],
+	"/(auth)/login": [
+		"src/routes/+layout.ts"
+	],
+	"/profile": [
+		"src/routes/+layout.ts"
+	],
+	"/profile/[id]": [
+		"src/routes/profile/[id]/+page.ts",
+		"src/routes/+layout.ts"
+	],
+	"/(auth)/recover": [
+		"src/routes/+layout.ts"
+	],
+	"/(auth)/register": [
+		"src/routes/+layout.ts"
+	],
+	"/scores": [
+		"src/routes/+layout.ts"
+	],
+	"/(auth)/verify": [
+		"src/routes/+layout.ts"
+	]
+}
