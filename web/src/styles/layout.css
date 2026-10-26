@@ -39,18 +39,60 @@ body {
   scroll-timeline: --edge-fade block;
 }
 @media (hover: hover) and (pointer: fine) {
+  :root {
+    /* url  hotspot-x hotspot-y, fallback */
+    --cursor-default: url('/cursor.svg') 1 0, auto;
+    --cursor-pointer: url('/cursor-pointer.svg') 8 0, pointer;
+    --cursor-text: url('/cursor-text.svg') 7 15, text;
+  }
+
   /* Default cursor across the entire page */
   html,
   body {
-    cursor: url('/cursor.svg') 0 0, auto;
+    cursor: var(--cursor-default);
   }
 
+  /* Text you can select and copy */
+  p, h1, h2, h3, h4, h5, h6,
+  li, td, th, pre, code, blockquote, figcaption, dt, dd {
+    cursor: var(--cursor-text);
+  }
 
-  /* Keep the standard text I-beam when typing inside text boxes */
+  /* Anywhere you type */
+  input:not([type]),
   input[type='text'],
   input[type='email'],
   input[type='password'],
-  textarea {
-    cursor: text;
+  input[type='search'],
+  input[type='url'],
+  input[type='number'],
+  textarea,
+  [contenteditable='true'] {
+    cursor: var(--cursor-text);
+  }
+
+  /* Clickable things (!important so site classes can't override it) */
+  a[href], a[href] *,
+  button, button *,
+  [role='button'], [role='button'] *,
+  input[type='submit'],
+  input[type='button'],
+  input[type='checkbox'],
+  input[type='radio'],
+  select,
+  label[for],
+  summary, summary *,
+  [class*='btn'],
+  [class*='button'],
+  [onclick] {
+    cursor: var(--cursor-pointer) !important;
+  }
+
+  /* Disabled stuff goes back to the arrow (must stay below the block above) */
+  button:disabled, button:disabled *,
+  input:disabled,
+  a[href][aria-disabled='true'], a[href][aria-disabled='true'] *,
+  [aria-disabled='true'], [aria-disabled='true'] * {
+    cursor: var(--cursor-default) !important;
   }
 }
