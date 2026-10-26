@@ -38,3 +38,19 @@ body {
 [data-fade-source] {
   scroll-timeline: --edge-fade block;
 }
+@media (hover: hover) and (pointer: fine) {
+  /* Default cursor across the entire page */
+  html,
+  body {
+    cursor: url('/cursor.svg') 0 0, auto;
+  }
+
+
+  /* Keep the standard text I-beam when typing inside text boxes */
+  input[type='text'],
+  input[type='email'],
+  input[type='password'],
+  textarea {
+    cursor: text;
+  }
+}
