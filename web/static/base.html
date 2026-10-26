@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>d4rkc0de</title>
+<style>
+:root { --bg-0: #0a0a0c; --bg-1: #1a1a1a; --red: #c0392b; }
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body { background: radial-gradient(circle at 50% 40%, var(--bg-1) 0%, var(--bg-0) 75%); overflow: hidden; }
+
+.backdrop { position: fixed; inset: 0; pointer-events: none; overflow: hidden; }
+.backdrop::after { content: ""; position: absolute; inset: 0; background: radial-gradient(ellipse at center, transparent 45%, rgba(0,0,0,.55) 100%); }
+#gears { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+.gear-path { fill: none; stroke: rgba(235,235,240,.13); stroke-width: 1.4; vector-effect: non-scaling-stroke; }
+.gear-path.thin { stroke-width: 1; opacity: .7; }
+.gear-path.red { stroke: rgba(192,57,43,.22); }
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin { animation: spin linear infinite; }
+
+.clock { position: absolute; left: 50%; top: 50%; width: min(92vmin, 900px); aspect-ratio: 1; transform: translate(-50%,-50%); opacity: .6; }
+.clock svg { width: 100%; height: 100%; overflow: visible; }
+.c-ring { fill: none; stroke: rgba(235,235,240,.2); stroke-width: 1.2; }
+.c-ring.outer { stroke-width: 2.2; stroke: rgba(235,235,240,.28); }
+.c-ring.thin { stroke-width: .8; stroke: rgba(235,235,240,.12); }
+.c-ring.dashed { stroke-dasharray: 2 6; }
+.c-tick { stroke: rgba(235,235,240,.28); stroke-width: 1; }
+.c-tick.major { stroke: rgba(235,235,240,.5); stroke-width: 2; }
+.hand { transform-origin: 0 0; transition: transform .35s cubic-bezier(.4,2.2,.6,1); }
+.hand.slow { transition: transform .8s ease-out; }
+.hand-body { fill: rgba(235,235,240,.2); stroke: rgba(235,235,240,.5); stroke-width: 1; }
+.c-num { fill: rgba(235,235,240,.42); font-family: 'Cormorant Garamond', 'Cormorant', Georgia, 'Times New Roman', serif; font-size: 17px; font-weight: 600; text-anchor: middle; dominant-baseline: central; }
+.hand-sec line { stroke: rgba(235,235,240,.5); stroke-width: 1.4; }
+.hand-sec circle { fill: none; stroke: rgba(235,235,240,.5); stroke-width: 1.4; }
+.hub { fill: var(--bg-0); stroke: rgba(235,235,240,.5); stroke-width: 2; }
+
+@media (prefers-reduced-motion: reduce) { .spin { animation: none !important; } .hand { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<div class="backdrop" aria-hidden="true">
+  <svg id="gears" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice"></svg>
+  <div class="clock">
+    <svg viewBox="-200 -200 400 400">
+      <circle r="196" class="c-ring outer"/>
+      <circle r="188" class="c-ring"/>
+      <circle r="150" class="c-ring thin"/>
+      <circle r="62" class="c-ring thin dashed"/>
+      <g id="c-ticks"></g>
+      <g id="c-nums"></g>
+      <g class="hand slow" id="h-hour"><path class="hand-body" d="M-5 18 L-3 -96 L0 -104 L3 -96 L5 18 Z"/></g>
+      <g class="hand slow" id="h-min"><path class="hand-body" d="M-3.5 22 L-2 -150 L0 -160 L2 -150 L3.5 22 Z"/></g>
+      <g class="hand hand-sec" id="h-sec"><line y1="34" y2="-172"/><circle cy="-130" r="6"/></g>
+      <circle r="6" class="hub"/>
+    </svg>
+  </div>
+</div>
+
+<script>
+(function () {
+  var NS = 'http://www.w3.org/2000/svg', TAU = Math.PI * 2;
+  function el(tag, attrs, parent) {
+    var e = document.createElementNS(NS, tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+
+  /* gear generator: n teeth, pitch radius r, module m */
+  function gearPath(n, r, m) {
+    var ro = r + m * 0.55, rr = r - m * 0.6, p = TAU / n, d = '';
+    function pt(rad, a) { return (rad * Math.cos(a)).toFixed(2) + ',' + (rad * Math.sin(a)).toFixed(2); }
+    for (var k = 0; k < n; k++) {
+      var c = k * p;
+      d += (k ? 'L' : 'M') + pt(rr, c - 0.28 * p) + 'L' + pt(ro, c - 0.15 * p) + 'L' + pt(ro, c + 0.15 * p) + 'L' + pt(rr, c + 0.28 * p);
+    }
+    return d + 'Z';
+  }
+  function gearBody(g, n, r, m, cls) {
+    el('path', { d: gearPath(n, r, m), 'class': 'gear-path ' + (cls || '') }, g);
+    var rim = r - m * 1.7, hub = Math.max(r * 0.16, 6);
+    el('circle', { r: rim, 'class': 'gear-path thin' }, g);
+    el('circle', { r: hub, 'class': 'gear-path thin' }, g);
+    var spokes = n > 20 ? 6 : (n > 12 ? 5 : 4);
+    for (var i = 0; i < spokes; i++) {
+      var a = i * TAU / spokes;
+      el('line', { x1: (hub * Math.cos(a)).toFixed(2), y1: (hub * Math.sin(a)).toFixed(2),
+                   x2: (rim * Math.cos(a)).toFixed(2), y2: (rim * Math.sin(a)).toFixed(2), 'class': 'gear-path thin' }, g);
+    }
+  }
+
+  /* meshing gear chains: counter-rotating, speeds in true tooth ratio */
+  var M = 8, BASE_PERIOD = 260;
+  var chains = [
+    { x: 110,  y: 150, n: 26, red: 0, links: [[28, 16], [72, 34], [18, 12]] },
+    { x: 1490, y: 880, n: 30, red: 1, links: [[205, 18], [238, 10], [190, 24]] },
+    { x: 1500, y: 130, n: 14, red: 0, links: [[112, 22], [150, 12]] },
+    { x: 150,  y: 900, n: 20, red: 0, links: [[-22, 12], [-60, 26]] }
+  ];
+  var svg = document.getElementById('gears');
+  chains.forEach(function (ch) {
+    var prev = { x: ch.x, y: ch.y, n: ch.n, th: Math.random() * 360, dir: 1 }, list = [prev];
+    ch.links.forEach(function (l) {
+      var a = l[0] * Math.PI / 180, n = l[1], dist = (prev.n + n) * M / 2;
+      var cur = { x: prev.x + dist * Math.cos(a), y: prev.y + dist * Math.sin(a), n: n, dir: -prev.dir };
+      var u = ((l[0] - prev.th) * prev.n / 360) % 1; if (u < 0) u += 1;
+      cur.th = l[0] + 180 - 360 * (0.5 - u) / n;   // tooth meets gap
+      list.push(cur); prev = cur;
+    });
+    list.forEach(function (g, i) {
+      var outer = el('g', { 'class': 'spin' }, svg);
+      outer.style.transformOrigin = g.x + 'px ' + g.y + 'px';
+      outer.style.animationDuration = (BASE_PERIOD * g.n / 24).toFixed(1) + 's';
+      outer.style.animationDirection = g.dir > 0 ? 'normal' : 'reverse';
+      var inner = el('g', { transform: 'translate(' + g.x.toFixed(1) + ' ' + g.y.toFixed(1) + ') rotate(' + g.th.toFixed(2) + ')' }, outer);
+      gearBody(inner, g.n, g.n * M / 2, M, ch.red && i === 0 ? 'red' : '');
+    });
+  });
+
+  /* clock ticks + live hands */
+  var ticks = document.getElementById('c-ticks');
+  for (var i = 0; i < 60; i++) {
+    var a = i * TAU / 60 - Math.PI / 2, major = i % 5 === 0, r1 = major ? 174 : 180, r2 = 187;
+    el('line', { x1: r1 * Math.cos(a), y1: r1 * Math.sin(a), x2: r2 * Math.cos(a), y2: r2 * Math.sin(a), 'class': 'c-tick' + (major ? ' major' : '') }, ticks);
+  }
+  var nums = document.getElementById('c-nums'), roman = ['XII','I','II','III','IV','V','VI','VII','VIII','IX','X','XI'];
+  for (var j = 0; j < 12; j++) {
+    var b = j * TAU / 12 - Math.PI / 2;
+    var t = el('text', { x: 160 * Math.cos(b), y: 160 * Math.sin(b), 'class': 'c-num' }, nums);
+    t.textContent = roman[j];
+  }
+  var hS = document.getElementById('h-sec'), hM = document.getElementById('h-min'), hH = document.getElementById('h-hour');
+  var last = { s: 0, m: 0, h: 0 }, turns = { s: 0, m: 0, h: 0 };
+  function put(node, key, deg) {   // monotonic angle so hands never spin backwards at wrap
+    if (deg < last[key]) turns[key]++;
+    last[key] = deg;
+    node.style.transform = 'rotate(' + (deg + turns[key] * 360) + 'deg)';
+  }
+  function tick() {
+    var d = new Date(), s = d.getSeconds(), m = d.getMinutes() + s / 60, h = (d.getHours() % 12) + m / 60;
+    put(hS, 's', s * 6); put(hM, 'm', m * 6); put(hH, 'h', h * 30);
+  }
+  tick(); setInterval(tick, 1000);
+})();
+</script>
+</body>
+</html>

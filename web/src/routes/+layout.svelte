@@ -1,3 +1,4 @@
+```svelte
 <script lang="ts">
   import '../styles/reset.css'
   import '../styles/fonts.css'
@@ -26,10 +27,13 @@
   onMount(() => {
     initAnalytics(data.clientConfig)
     const cleanupFadeFallback = initFadeFallback()
+
     const handleStorage = (event: StorageEvent) => {
       if (event.key === 'token') void resetSessionQueries(data.queryClient)
     }
+
     window.addEventListener('storage', handleStorage)
+
     return () => {
       cleanupFadeFallback?.()
       window.removeEventListener('storage', handleStorage)
@@ -38,8 +42,10 @@
 
   function onAnimationEnd(event: AnimationEvent) {
     if (event.animationName !== 'reveal-fade-in') return
-    if (event.target instanceof HTMLElement)
+
+    if (event.target instanceof HTMLElement) {
       event.target.removeAttribute('data-reveal')
+    }
   }
 </script>
 
@@ -50,6 +56,7 @@
   <link rel="shortcut icon" href="/favicon.ico" />
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
   <link rel="manifest" href="/site.webmanifest" />
+
   <meta name="apple-mobile-web-app-title" content={data.clientConfig.ctfName} />
   <title>{data.clientConfig.ctfName}</title>
 
@@ -57,7 +64,6 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
 
   <meta name="description" content={data.clientConfig.meta.description} />
-
   <meta name="theme-color" content="#111111" />
   <link rel="canonical" href={data.clientConfig.origin} />
 
@@ -80,9 +86,18 @@
   <meta name="twitter:url" content={data.clientConfig.origin} />
 </svelte:head>
 
+<iframe
+  src="/base.html"
+  title="Background"
+  tabindex="-1"
+  aria-hidden="true"
+  class="bg-frame"
+></iframe>
+
 <QueryClientProvider client={data.queryClient}>
   <app-shell>
     <a class="skip-link" href="#main-content">Skip to main content</a>
+
     <Navigation />
 
     <main id="main-content" tabindex="-1">
@@ -98,7 +113,19 @@
 <Brainrot />
 
 <style>
+  .bg-frame {
+    position: fixed;
+    inset: 0;
+    inline-size: 100%;
+    block-size: 100%;
+    border: none;
+    z-index: 0;
+    pointer-events: none;
+  }
+
   app-shell {
+    position: relative;
+    z-index: 1;
     display: flex;
     flex-direction: column;
     min-block-size: 100dvh;
@@ -129,3 +156,4 @@
     }
   }
 </style>
+```
